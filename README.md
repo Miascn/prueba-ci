@@ -1,69 +1,126 @@
-# CodeIgniter 4 Application Starter
+# Sistema de Ventas en CodeIgniter 4
 
-## What is CodeIgniter?
+Sistema web básico desarrollado con **PHP 8 + CodeIgniter 4 + MySQL + Bootstrap 5**, ideal para pruebas técnicas y demostraciones de desarrollo web backend/fullstack.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+Incluye:
+* **Autenticación**: Login y Logout con sesiones y contraseñas cifradas.
+* **CRUD de Clientes**: Crear, listar, editar y eliminar clientes.
+* **CRUD de Productos**: Control de catálogo, precios y existencias (stock).
+* **Módulo de Ventas**: Registro de venta con selección de cliente, producto, cantidad, cálculo de total y descuento automático de inventario.
+* **Historial y Comprobante**: Detalle de venta y opción para anular venta (restaura el stock).
+* **Dashboard**: Resumen de totales (clientes, productos, ventas e ingresos).
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+---
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## 1. Comandos Frecuentes (Terminal / Spark)
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+### Servidor de Desarrollo
+```bash
+# Iniciar el servidor local en el puerto 8080
+php spark serve --port 8080
 
-## Installation & updates
+# Iniciar en el puerto por defecto (8080)
+php spark serve
+```
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+### Base de Datos y Migraciones
+```bash
+# Ejecutar las migraciones (crear las tablas)
+php spark migrate
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+# Revertir y volver a ejecutar las migraciones desde cero
+php spark migrate:refresh
 
-## Setup
+# Poblar la base de datos con datos de prueba (admin, clientes, productos)
+php spark db:seed InitialSeeder
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+# Ver el estado de las migraciones
+php spark migrate:status
+```
 
-## Important Change with index.php
+### Rutas e Inspección
+```bash
+# Listar todas las rutas registradas y sus filtros aplicados
+php spark routes
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+# Generar una nueva clave de cifrado en el archivo .env
+php spark key:generate
+```
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+### Generadores Rápidos de Código (Scaffolding de Spark)
+```bash
+# Crear un nuevo controlador
+php spark make:controller NombreController
 
-**Please** read the user guide for a better explanation of how CI4 works!
+# Crear un nuevo modelo
+php spark make:model NombreModel
 
-## Repository Management
+# Crear una nueva migración
+php spark make:migration NombreMigracion
+```
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+### Comandos Git
+```bash
+# Ver estado de los archivos modificados
+git status
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+# Agregar cambios al área de preparación (stage)
+git add .
 
-## Server Requirements
+# Crear commit con mensaje
+git commit -m "Descripción de los cambios"
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+# Subir cambios al repositorio remoto
+git push origin main
+```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+---
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+## 2. Preguntas Típicas de Entrevista Técnica y Respuestas
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+### P1: ¿Cómo funciona el flujo de trabajo MVC en CodeIgniter 4?
+> **Respuesta:**
+> "La petición HTTP entra por `public/index.php`. El enrutador (`app/Config/Routes.php`) analiza la URL y ejecuta los filtros correspondientes (como `AuthFilter` para comprobar si el usuario inició sesión). Luego, la petición se envía al método del **Controlador** (ej. `Clientes::index`). El controlador invoca al **Modelo** (`ClienteModel`) para consultar la base de datos y finalmente le pasa los datos a la **Vista** (`clientes/index.php`) para renderizar el HTML que ve el usuario."
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+### P2: ¿Cómo protegiste las rutas privadas para que nadie entre sin iniciar sesión?
+> **Respuesta:**
+> "Creé un filtro en `app/Filters/AuthFilter.php` que evalúa `if (!session()->get('logged_in'))`. Si no hay sesión activa, redirige automáticamente a `/login`. En `app/Config/Filters.php` registré el alias `'auth'` y en `app/Config/Routes.php` agrupé todas las rutas protegidas (`/`, `/clientes`, `/productos`, `/ventas`) bajo el atributo `['filter' => 'auth']`."
+
+### P3: ¿Cómo se almacenan y verifican las contraseñas de los usuarios?
+> **Respuesta:**
+> "Nunca se guardan en texto plano. Se utiliza la función nativa de PHP `password_hash($password, PASSWORD_DEFAULT)` al crear el usuario (utiliza el algoritmo seguro Bcrypt). Al momento del login, tomo la contraseña escrita por el usuario y la comparo contra el hash de la base de datos usando `password_verify($password, $user['password'])`."
+
+### P4: ¿Cómo controlas el stock cuando se realiza una venta?
+> **Respuesta:**
+> "En el método `guardar()` de `Ventas`:
+> 1. Busco el producto por su ID y valido si hay suficiente inventario: `if ($producto['stock'] < $cantidad)`. Si no alcanza, devuelvo un error.
+> 2. Si hay stock, inserto la venta en `ventas` y el registro en `detalle_ventas`.
+> 3. Descuento las unidades vendidas actualizando el producto: `$productModel->update($id, ['stock' => $producto['stock'] - $cantidad])`.
+> 4. Si la venta se llega a anular en `eliminar()`, recorro los detalles y le devuelvo las unidades al stock del producto."
+
+### P5: ¿Para qué sirve la propiedad `$allowedFields` en los modelos de CodeIgniter?
+> **Respuesta:**
+> "Sirve como medida de seguridad contra ataques de **Asignación Masiva (Mass Assignment)**. En `$allowedFields` listamos únicamente los campos de la tabla que permitimos que se puedan guardar o actualizar desde peticiones del usuario. Si alguien intenta inyectar campos no autorizados (como `id` o cambiar su rol), CodeIgniter los ignora automáticamente."
+
+### P6: ¿Cómo proteges los formularios contra ataques CSRF?
+> **Respuesta:**
+> "Dentro de cada etiqueta `<form method=\"POST\">` se coloca la función `<?= csrf_field() ?>`. Esto genera un campo oculto con un token criptográfico único. CodeIgniter valida automáticamente que el token coincida con el de la sesión actual antes de procesar la petición POST."
+
+### P7: ¿Dónde se configuran las credenciales de la base de datos y por qué no están en Git?
+> **Respuesta:**
+> "Se configuran en el archivo `.env` en la raíz del proyecto (`database.default.hostname`, `database.default.database`, `database.default.username`, `database.default.password`). Este archivo está incluido en `.gitignore` para evitar que credenciales y contraseñas sensibles se suban al repositorio público o privado."
+
+---
+
+## 3. Credenciales y Datos de Prueba
+
+* **URL del Sistema:** `http://localhost:8080/login`
+* **Usuario:** `admin`
+* **Contraseña:** `admin123`
+
+### Estructura de la Base de Datos (`prueba_ci`):
+* `usuarios`: id, nombre, usuario, password, rol, created_at, updated_at.
+* `clientes`: id, documento, nombre, telefono, email, direccion, created_at, updated_at.
+* `productos`: id, codigo, nombre, descripcion, precio, stock, created_at, updated_at.
+* `ventas`: id, numero_factura, cliente_id, usuario_id, total, fecha, created_at, updated_at.
+* `detalle_ventas`: id, venta_id, producto_id, cantidad, precio_unitario, subtotal.
