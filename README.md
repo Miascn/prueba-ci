@@ -57,6 +57,9 @@ php spark make:model NombreModel
 
 # Crear una nueva migración
 php spark make:migration NombreMigracion
+
+# Crear un nuevo seeder
+php spark make:seeder NombreSeeder
 ```
 
 ### Comandos Git
@@ -109,6 +112,18 @@ git push origin main
 ### P7: ¿Dónde se configuran las credenciales de la base de datos y por qué no están en Git?
 > **Respuesta:**
 > "Se configuran en el archivo `.env` en la raíz del proyecto (`database.default.hostname`, `database.default.database`, `database.default.username`, `database.default.password`). Este archivo está incluido en `.gitignore` para evitar que credenciales y contraseñas sensibles se suban al repositorio público o privado."
+
+### P8: ¿Qué es un Seeder (Semillero), para qué sirve y en qué se diferencia de una Migración?
+> **Respuesta:**
+> "Un **Seeder** es una clase en `app/Database/Seeds/` que sirve para poblar o alimentar la base de datos con datos automáticamente. Se utiliza para:
+> 1. Crear datos iniciales obligatorios del sistema (como el usuario administrador inicial o roles).
+> 2. Insertar datos de prueba (dummy data) para poder probar el sistema sin tener que registrar clientes y productos a mano uno por uno.
+>
+> **Diferencia clave con una Migración:**
+> * La **Migración** gestiona la **estructura** de la base de datos (crea, modifica o elimina tablas, columnas y tipos de datos - DDL).
+> * El **Seeder** gestiona el **contenido** (inserta los registros dentro de esas tablas usando `$this->db->table('tabla')->insertBatch([...])` - DML).
+>
+> **Cómo se ejecuta:** Con el comando `php spark db:seed InitialSeeder`."
 
 ---
 
